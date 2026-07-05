@@ -1,0 +1,15 @@
+// Detection: Sign-in from an unusual / disallowed country
+// Logic: successful sign-in where the source country is not in the allow-list.
+// Table: SigninLogs
+// MITRE ATT&CK: T1078 (Valid Accounts)
+// Tune: edit allowedCountries to match where your users legitimately sign in from.
+
+let allowedCountries = dynamic(["CA", "US"]);
+SigninLogs
+| where TimeGenerated > ago(1d)
+| where ResultType == 0                                   // successful sign-ins only
+| extend Country = tostring(LocationDetails.countryOrRegion)
+| where isnotempty(Country) and Country !in (allowedCountries)
+| project TimeGenerated, UserPrincipalName, IPAddress, Country,
+          City = tostring(LocationDetails.city), AppDisplayName
+| order by TimeGenerated desc

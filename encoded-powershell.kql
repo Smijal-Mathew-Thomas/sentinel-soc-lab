@@ -1,0 +1,13 @@
+// Hunt: Encoded / obfuscated PowerShell execution
+// Logic: PowerShell launched with an encoded-command flag is a common way to hide
+//        malicious scripts. Requires process command-line auditing (Event ID 4688).
+// Table: SecurityEvent
+// MITRE ATT&CK: T1059.001 (PowerShell), T1027 (Obfuscated Files or Information)
+
+SecurityEvent
+| where TimeGenerated > ago(7d)
+| where EventID == 4688                                   // process creation
+| where NewProcessName has "powershell"
+| where CommandLine has_any ("-enc", "-EncodedCommand", "-e ", "FromBase64String", "-nop", "-w hidden")
+| project TimeGenerated, Computer, Account = SubjectUserName, NewProcessName, CommandLine
+| order by TimeGenerated desc

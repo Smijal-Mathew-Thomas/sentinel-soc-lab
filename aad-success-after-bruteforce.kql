@@ -1,0 +1,27 @@
+// Detection: Successful sign-in after a brute-force burst (possible compromise)
+// Logic: same IP + user that generated 10+ failures then has a SUCCESSFUL sign-in.
+// Table: SigninLogs
+// MITRE ATT&CK: T1110 (Brute Force) leading to T1078 (Valid Accounts)
+
+let window = 1h;
+let threshold = 10;
+// Step 1: bursts of failures per IP + user
+let failures =
+    SigninLogs
+    | where TimeGenerated > ago(window)
+    | where ResultType != 0
+    | summarize Failures = count(), FailStart = min(TimeGenerated), FailEnd = max(TimeGenerated)
+        by IPAddress, UserPrincipalName
+    | where Failures >= threshold;
+// Step 2: successful sign-ins per IP + user
+let successes =
+    SigninLogs
+    | where TimeGenerated > ago(window)
+    | where ResultType == 0
+    | project SuccessTime = TimeGenerated, IPAddress, UserPrincipalName, AppDisplayName;
+// Step 3: a success that happened AFTER the failure burst
+failures
+| join kind=inner successes on IPAddress, UserPrincipalName
+| where SuccessTime >= FailEnd
+| project UserPrincipalName, IPAddress, Failures, FailStart, FailEnd, SuccessTime, AppDisplayName
+| order by SuccessTime desc

@@ -1,0 +1,5 @@
+IPAddress,ThreatType,Source,Notes
+185.220.101.1,TorExitNode,OSINT,Sample - known Tor exit node
+45.148.10.100,BruteForce,AbuseIPDB,Sample - reported SSH/RDP brute force
+193.32.162.50,Scanner,OSINT,Sample - mass port scanner
+141.98.10.60,BruteForce,AbuseIPDB,Sample - reported RDP brute force

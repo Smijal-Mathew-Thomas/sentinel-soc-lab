@@ -1,0 +1,14 @@
+// Hunt: Members added to privileged / security-enabled groups
+// Logic: Event IDs 4728/4732/4756 = a member was added to a security-enabled group.
+//        Additions to admin groups (Domain Admins, Administrators) deserve review.
+// Table: SecurityEvent
+// MITRE ATT&CK: T1098 (Account Manipulation), T1078 (Valid Accounts)
+
+SecurityEvent
+| where TimeGenerated > ago(7d)
+| where EventID in (4728, 4732, 4756)                     // member added to group
+| project TimeGenerated, Computer, EventID,
+          GroupName    = TargetUserName,
+          MemberAdded  = MemberName,
+          PerformedBy  = SubjectUserName
+| order by TimeGenerated desc

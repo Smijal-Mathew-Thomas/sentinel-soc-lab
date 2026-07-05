@@ -1,0 +1,17 @@
+// Detection: Windows failed-logon brute force
+// Logic: 10+ failed logons (Event ID 4625) for an account/source within 15 minutes.
+// Table: SecurityEvent (Windows Security Events via AMA connector)
+// MITRE ATT&CK: T1110 (Brute Force)
+
+SecurityEvent
+| where TimeGenerated > ago(1h)
+| where EventID == 4625                          // failed logon
+| summarize
+    Failures  = count(),
+    Computers = make_set(Computer, 25),
+    FirstSeen = min(TimeGenerated),
+    LastSeen  = max(TimeGenerated)
+    by Account, IpAddress, bin(TimeGenerated, 15m)
+| where Failures >= 10
+| project Account, IpAddress, Failures, Computers, FirstSeen, LastSeen
+| order by Failures desc
