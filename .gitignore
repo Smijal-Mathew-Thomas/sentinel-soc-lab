@@ -1,0 +1,11 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets — never commit real credentials, subscription IDs, or exported logs
+*.env
+secrets.*
+*.log
+exported-logs/
